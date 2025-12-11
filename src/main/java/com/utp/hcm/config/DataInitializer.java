@@ -80,7 +80,9 @@ public class DataInitializer {
             }
 
             seedAsistenciasYNovedades(nuevos, asistenciaRepository, incidenciaRepository);
-            seedAdminUser(usuarioRepository, passwordEncoder);
+            seedAdminUser(usuarioRepository, passwordEncoder, empleadoRepository,
+                    cargoRepository, departamentoRepository, horarioTrabajoRepository,
+                    tipoContratoRepository, tipoPensionRepository);
         };
     }
 
@@ -312,23 +314,53 @@ public class DataInitializer {
         }
     }
 
-    private void seedAdminUser(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    private void seedAdminUser(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
+            EmpleadoRepository empleadoRepository,
+            CargoRepository cargoRepository, DepartamentoRepository departamentoRepository,
+            HorarioTrabajoRepository horarioTrabajoRepository, TipoContratoRepository tipoContratoRepository,
+            TipoPensionRepository tipoPensionRepository) {
+
         String adminEmail = "admin@mimundofeliz.edu.pe";
         if (usuarioRepository.findByCorreoInstitucional(adminEmail).isEmpty()) {
-            // Crear un empleado "dummy" para el admin
+
+            // --- 1. Obtener datos de referencia ---
+            // Se asume que estos IDs (1L o el primer registro) existen gracias a los
+            // seeders anteriores.
+            Cargo cargoAdmin = cargoRepository.findById(1).orElseThrow(() -> new RuntimeException("Falta Cargo ID 1"));
+            Departamento deptAdmin = departamentoRepository.findById(1)
+                    .orElseThrow(() -> new RuntimeException("Falta Departamento ID 1"));
+            HorarioTrabajo horarioAdmin = horarioTrabajoRepository.findById(1)
+                    .orElseThrow(() -> new RuntimeException("Falta HorarioTrabajo ID 1"));
+            TipoContrato contratoAdmin = tipoContratoRepository.findById(1)
+                    .orElseThrow(() -> new RuntimeException("Falta TipoContrato ID 1"));
+            TipoPension pensionAdmin = tipoPensionRepository.findById(1)
+                    .orElseThrow(() -> new RuntimeException("Falta TipoPension ID 1"));
+
+            // --- 2. Crear y configurar el Empleado "Dummy" (Admin) ---
             Empleado adminEmpleado = new Empleado();
             adminEmpleado.setNombre("Admin");
             adminEmpleado.setApellido("System");
             adminEmpleado.setDni("00000000");
             adminEmpleado.setCorreo("admin.system@familiafeliz.com");
-            empleadoRepository.save(adminEmpleado); // <--- ¡LÍNEA AGREGADA!
-            // Set other required fields with dummy data if needed, or allow nulls if entity
-            // permits
-            // For now assuming minimal requirements. If constraints exist, we'd need to
-            // fetch a cargo/dept.
 
+            // Campos que NO pueden ser NULL:
+            adminEmpleado.setFechaContratacion(LocalDate.now()); // FECHA_CONTRATACION (¡Solución al error!)
+            adminEmpleado.setSueldoBase(9999.00d); // SUELDO_BASE (Valor de referencia)
+            adminEmpleado.setTieneHijosMenores(false); // TIENE_HIJOS_MENORES (Valor de referencia)
+
+            // Campos de RELACIÓN (IDs):
+            adminEmpleado.setCargo(cargoAdmin);
+            adminEmpleado.setDepartamento(deptAdmin);
+            adminEmpleado.setHorarioTrabajo(horarioAdmin);
+            adminEmpleado.setTipoContrato(contratoAdmin);
+            adminEmpleado.setTipoPension(pensionAdmin);
+
+            // --- 3. Persistir el Empleado Dummy ---
+            empleadoRepository.save(adminEmpleado);
+
+            // --- 4. Crear y guardar el Usuario Admin ---
             Usuario adminUser = new Usuario();
-            adminUser.setEmpleado(adminEmpleado); // Link the dummy employee (CascadeType.ALL usually handles save)
+            adminUser.setEmpleado(adminEmpleado);
             adminUser.setCorreoInstitucional(adminEmail);
             adminUser.setPassword(passwordEncoder.encode("admin"));
             adminUser.setRol("ROLE_ADMIN");
