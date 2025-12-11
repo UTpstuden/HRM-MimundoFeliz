@@ -1,7 +1,7 @@
 # --------------------------------------------------------------------------------
 # ETAPA 1: BUILD - Compila la aplicación Spring Boot
 # --------------------------------------------------------------------------------
-FROM maven:3.5.7-amazoncorretto-17 AS build
+FROM maven:3.9.6-amazoncorretto-17 AS build
 # Establece el directorio de trabajo dentro del contenedor
 WORKDIR /app
 # Copia los archivos de configuración de Maven (pom.xml) para aprovechar el caché
