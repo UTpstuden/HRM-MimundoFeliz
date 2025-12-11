@@ -1,12 +1,5 @@
 package com.utp.hcm.config;
 
-import com.utp.hcm.model.*;
-import com.utp.hcm.repository.*;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.text.Normalizer;
 import java.time.DayOfWeek;
 import java.time.Duration;
@@ -18,8 +11,39 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.utp.hcm.model.Asistencia;
+import com.utp.hcm.model.Cargo;
+import com.utp.hcm.model.Departamento;
+import com.utp.hcm.model.Empleado;
+import com.utp.hcm.model.HorarioDetalle;
+import com.utp.hcm.model.HorarioTrabajo;
+import com.utp.hcm.model.Incidencia;
+import com.utp.hcm.model.NetworkPolicy;
+import com.utp.hcm.model.TipoContrato;
+import com.utp.hcm.model.TipoPension;
+import com.utp.hcm.model.Usuario;
+import com.utp.hcm.repository.AsistenciaRepository;
+import com.utp.hcm.repository.CargoRepository;
+import com.utp.hcm.repository.DepartamentoRepository;
+import com.utp.hcm.repository.EmpleadoRepository;
+import com.utp.hcm.repository.HorarioTrabajoRepository;
+import com.utp.hcm.repository.IncidenciaRepository;
+import com.utp.hcm.repository.NetworkPolicyRepository;
+import com.utp.hcm.repository.TipoContratoRepository;
+import com.utp.hcm.repository.TipoPensionRepository;
+import com.utp.hcm.repository.UsuarioRepository;
+
 @Configuration
 public class DataInitializer {
+
+    @Autowired
+    private EmpleadoRepository empleadoRepository;
 
     @Bean
     CommandLineRunner initData(
@@ -297,6 +321,7 @@ public class DataInitializer {
             adminEmpleado.setApellido("System");
             adminEmpleado.setDni("00000000");
             adminEmpleado.setCorreo("admin.system@familiafeliz.com");
+            empleadoRepository.save(adminEmpleado); // <--- ¡LÍNEA AGREGADA!
             // Set other required fields with dummy data if needed, or allow nulls if entity
             // permits
             // For now assuming minimal requirements. If constraints exist, we'd need to
